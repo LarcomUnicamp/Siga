@@ -12,8 +12,6 @@ import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import br.gov.jfrj.siga.cp.logic.CpPodePorConfiguracao;
-import br.gov.jfrj.siga.cp.model.enm.CpTipoDeConfiguracao;
 import com.mashape.unirest.http.Unirest;
 
 import br.com.caelum.vraptor.Consumes;
@@ -128,7 +126,7 @@ public class PrincipalController extends SigaController {
 			final GenericoSelecao sel = buscarGenericoPorSigla(sigla, pes, lot, incluirMatricula);
 
 			if (sel.getId() == null) {
-				if (podeUtilizarPesquisaGenericaViaXjus(pes, lot)) {
+				if (Prop.getBool("/xjus.url") != null) {
 					sel.setId(-1L);
 					sel.setSigla(sigla);
 					sel.setDescricao("/siga/app/xjus#!?filter=" + sigla);
@@ -154,7 +152,7 @@ public class PrincipalController extends SigaController {
 		sigla = sigla.trim().toUpperCase();
 
 		Map<String, CpOrgaoUsuario> mapAcronimo = new TreeMap<String, CpOrgaoUsuario>();
-		for (CpOrgaoUsuario ou : CpDao.getInstance().listarOrgaosUsuariosTodos()) {
+		for (CpOrgaoUsuario ou : CpDao.getInstance().listarOrgaosUsuarios()) {
 			mapAcronimo.put(ou.getAcronimoOrgaoUsu(), ou);
 			mapAcronimo.put(ou.getSiglaOrgaoUsu(), ou);
 		}
@@ -277,13 +275,6 @@ public class PrincipalController extends SigaController {
 		response.addHeader("Access-Control-Allow-Origin", "*");
 		response.addHeader("Access-Control-Allow-Methods", "GET,POST,DELETE,PUT,OPTIONS");
 		response.addHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
-	}
-
-	private boolean podeUtilizarPesquisaGenericaViaXjus(DpPessoa pessoa, DpLotacao lotacao) throws Exception {
-		return (Prop.getBool("/xjus.url") != null && new CpPodePorConfiguracao(pessoa, lotacao)
-				.withIdTpConf(CpTipoDeConfiguracao.UTILIZAR_PESQUISA_GENERICA_VIA_XJUS)
-				.withOrgaoObjeto(lotacao.getLotacaoAtual().getOrgaoUsuario())
-				.eval());
 	}
 
 }

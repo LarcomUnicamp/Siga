@@ -267,7 +267,7 @@ public class DpCargoController extends
 			result.include("idOrgaoUsu", cargo.getOrgaoUsuario().getId());
 			result.include("nmOrgaousu", cargo.getOrgaoUsuario().getNmOrgaoUsu());
 			
-			List<DpPessoa> list = CpDao.getInstance().consultarPessoasPorIdInicialDeCargo(cargo.getIdCargoIni());
+			List<DpPessoa> list = CpDao.getInstance().consultarPessoasComCargo(id);
 			if(list.size() == 0) {
 				result.include("podeAlterarOrgao", Boolean.TRUE);
 			}

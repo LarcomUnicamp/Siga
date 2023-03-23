@@ -3,10 +3,6 @@
  */
 "use strict";
 const qtdMax = 20;
-document.onkeydown = pressionouTecla;
-document.onkeypress = pressionouTecla;
-document.onkeyup = pressionouTecla;
-
 setTimeout(function() {
 	$('#bem-vindo').fadeTo(1000, 0, function() {
 		$('#row-bem-vindo').slideUp(1000);
@@ -26,21 +22,11 @@ var appMesa = new Vue({
 	mounted: function() {
 		this.errormsg = undefined;
 		var self = this;
-		self.mostrarUsuario = MOSTRAR_USUARIO;
 		self.exibeLota = getParmUser('exibeLota');
-		if (self.exibeLota == null) {
-			self.exibeLota = false; 
-		}
-		if (!self.mostrarUsuario)
-			self.exibeLota = true;
-		setParmUser('exibeLota', self.exibeLota); 
-		
 		self.getItensGrupo();
 		self.contar = false;
 		// Carrega todas linhas não preenchidas que estiverem na tela
 		var timeoutId;
-		this.setParmsDefault();
-
 		window.addEventListener('scroll', function ( event ) {
 			window.clearTimeout( timeoutId );
 			timeoutId = setTimeout(function() {
@@ -49,7 +35,7 @@ var appMesa = new Vue({
 					self.carregaLinhasExibidasNaTela();
 					window.clearTimeout( timeoutId );
 				}
-			}, 800);
+			}, 400);
 		}, false);
 	},
 	data: function() {
@@ -72,8 +58,7 @@ var appMesa = new Vue({
 			trazerCancelados: false,
 			ordemCrescenteData: false,
 			usuarioPosse: false,
-			dtDMA: false,
-			mostrarUsuario: true
+			dtDMA: false
 		};
 	},
 	watch: {
@@ -117,27 +102,17 @@ var appMesa = new Vue({
 	methods: {
 		getItensGrupo: function(grpNome, offset, qtd) {
 			var self = this
+			this.setParmsDefault();
 			let contar = true;
 
 			/* clean toast container before reload notification */
 			$('#toastContainer').empty();
- 
-			if (sessionStorage.getItem('timeout' + getUser())) {
-				let timeout = Math.abs(new Date() -
-					new Date(sessionStorage.getItem('timeout' + getUser())));
-				if (timeout < 600000 && grpNome)
-					// Se está obtendo mais documentos de um grupo pq rolou a tela, nao conta dentro de 10 min 
-					contar = false;
-				if (timeout < 300000 && !grpNome 
-						&& sessionStorage.getItem('mesa2' + getUser()) != undefined) {
-					// Se nao passou 5 min a partir do ultimo request e não é 
-					// solicitação de mais itens de um grupo, obtem mesa do cache na Session Storage
-					carregaFromJson(sessionStorage.getItem('mesa2' + getUser()), self); 
-					resetCacheLotacaoPessoaAtual(); 
-					return;
-				}
+
+			let timeout = Math.abs(new Date() -
+				new Date(sessionStorage.getItem('timeout' + getUser())));
+			if (timeout < 120000 && grpNome) {
+				contar = false;
 			}
-				
 			if (this.carregando)
 				return;
 			this.carregando = true;
@@ -184,7 +159,7 @@ var appMesa = new Vue({
 					filtro: this.filtro,
 					idVisualizacao: ID_VISUALIZACAO
 				},
-				complete: function(response, status) {
+				complete: function(response, status, request) {
 					let cType = response.getResponseHeader('Content-Type');
 					self.errormsg = undefined;
 					if (status == 'timeout') {
@@ -285,7 +260,6 @@ var appMesa = new Vue({
 			return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
 		},	
 		resetaStorage: function() {
-			sessionStorage.removeItem('mesa2' + getUser());
 			localStorage.removeItem('grupos' + getUser());
 			this.trazerAnotacoes = false;
 			this.trazerComposto = false;
@@ -337,6 +311,7 @@ var appMesa = new Vue({
 			if (listaLinhas.length > 0)
 				offset = parseInt(listaLinhas[listaLinhas.length - 1]
 						.getAttribute('data-numitem')) + 1;
+			sessionStorage.removeItem('timeout' + getUser());
 			if (this.exibeLota)
 				setValueGrupo(grupoNome, 'grupoQtdLota', listaLinhas.length + parseInt(this.qtdPag));
 			else
@@ -535,7 +510,7 @@ function carregaFromJson(json, appMesa) {
 		appMesa.errormsg = "Não foram encontrados documentos para esta pesquisa.";
 		
 	if (grp.length > 1) {
-		preencheLinhasFantasmas(grp, appMesa);
+		preencheLinhasFantasmas(grp);
 		appMesa.grupos = grp;
 	} else {
 		if (grp[0].grupoDocs && grp[0].grupoDocs.length > 0) {
@@ -555,30 +530,19 @@ function carregaFromJson(json, appMesa) {
 						grp[0].grupoCounterUser = appMesa.grupos[g].grupoCounterUser;
 					}
 					removeLinhasDuplicadas(grp[0].grupoDocs);
-					preencheLinhasFantasmas(grp, appMesa);
+					preencheLinhasFantasmas(grp);
 					Vue.set(appMesa.grupos, g, grp[0]);
 				}
-			} 
-		} else { 
-			let grpVue = getGrupoVue(grp[0].grupoNome); 
-			// Se ainda houver linha a preencher no grupo e nao encontrou, reduz 1 do contador. 
-			// Provavelmente existe marca sem mobil no grupo 
-			if (grpVue && grpVue.grupoDocs && grpVue.grupoDocs.length > 0
-				&& grpVue.grupoCounterAtivo > 0 
-				&& grpVue.grupoDocs[grpVue.grupoDocs.length - 1].codigo == "") {
-				grpVue.grupoDocs.length--;
-				grpVue.grupoCounterAtivo--;
-				if (appMesa.exibeLota)
-					grpVue.grupoCounterLota--
-				else
-					grpVue.grupoCounterUser--
+			}
+		} else {
+			for (let g in appMesa.grupos) {
+				if (appMesa.grupos[g].grupoOrdem == grp[0].grupoOrdem) 
+					appMesa.grupos[g].grupoDocs = [];
 			}
 		}
 	}
 	
 	appMesa.grupos = removerGruposDuplicados(appMesa.grupos);
-	sessionStorage.setItem( 
-			'mesa2' + getUser(), JSON.stringify(appMesa.grupos)); 
 	atualizaGrupos(appMesa.grupos);
 	appMesa.$nextTick(function() { 
 		initPopovers();
@@ -593,7 +557,7 @@ function removeLinhasDuplicadas(grp) {
 			grp.splice(ix, 1);
 	}
 }
-function preencheLinhasFantasmas(grupos, appMesa) {
+function preencheLinhasFantasmas(grupos) {
 	// De acordo com os contadores de cada grupo e as linhas já baixadas, gera linhas sem dados
 	// Estas linhas servirão de referência para obter mais linhas do server quando o usuário rolar página
 	for (let j=0; j < grupos.length; j++) {
@@ -602,7 +566,7 @@ function preencheLinhasFantasmas(grupos, appMesa) {
 			if (!g.grupoDocs)
 				g.grupoDocs = [];
 			let docsFinal = []
-			let qt = getGrupoQtd(g, appMesa.exibeLota);
+			let qt = getGrupoQtd(g);
 			for (let h=0; h < qt && h < g.grupoCounterAtivo; h++) {
 				let ix = g.grupoDocs.findIndex(e => e.offset === h.toString());
 				if (ix < 0) {
@@ -628,8 +592,8 @@ function removerGruposDuplicados(values) {
 	return filterValues;
 }
 
-function getGrupoQtd(grupo, isLotacao) {
-	if (isLotacao)
+function getGrupoQtd(grupo) {
+	if (appMesa.exibeLota)
 		return grupo.grupoQtdLota;
 	else
 		return grupo.grupoQtd;
@@ -648,12 +612,6 @@ function getPrimeiroExibido(sel) {
 				return todos[i];
 		}
 	return null;
-}
-
-function pressionouTecla(e) {
-    if (e.keyCode == 116) {
-        sessionStorage.removeItem('mesa2' + getUser());
-    }
 }
 
 /**

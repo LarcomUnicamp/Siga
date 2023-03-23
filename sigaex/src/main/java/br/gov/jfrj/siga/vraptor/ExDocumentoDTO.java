@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -22,11 +21,9 @@ import java.util.TreeMap;
 import br.gov.jfrj.siga.base.AplicacaoException;
 import br.gov.jfrj.siga.base.SigaMessages;
 import br.gov.jfrj.siga.base.TipoResponsavelEnum;
-import br.gov.jfrj.siga.cp.CpArquivo;
 import br.gov.jfrj.siga.cp.model.CpOrgaoSelecao;
 import br.gov.jfrj.siga.cp.model.DpLotacaoSelecao;
 import br.gov.jfrj.siga.cp.model.DpPessoaSelecao;
-import br.gov.jfrj.siga.cp.model.enm.CpSituacaoDeConfiguracaoEnum;
 import br.gov.jfrj.siga.dp.CpOrgao;
 import br.gov.jfrj.siga.ex.ExClassificacao;
 import br.gov.jfrj.siga.ex.ExDocumento;
@@ -37,8 +34,6 @@ import br.gov.jfrj.siga.ex.ExNivelAcesso;
 import br.gov.jfrj.siga.ex.ExPreenchimento;
 import br.gov.jfrj.siga.ex.ExTipoDocumento;
 import br.gov.jfrj.siga.ex.ExTpDocPublicacao;
-import br.gov.jfrj.siga.ex.bl.Ex;
-import br.gov.jfrj.siga.ex.model.enm.ExTipoDeConfiguracao;
 import br.gov.jfrj.siga.ex.util.FuncoesEL;
 
 public class ExDocumentoDTO {
@@ -150,8 +145,6 @@ public class ExDocumentoDTO {
 	private String numExtDoc;
 
 	private Long idMob;
-
-	private CpArquivo CpArquivoFormatoLivre;
 
 	private String obsOrgao;
 
@@ -466,10 +459,6 @@ public class ExDocumentoDTO {
 	}
 
 	public Map<Integer, String> getListaTipoDest() {
-		final CpSituacaoDeConfiguracaoEnum idSit = Ex.getInstance().getConf()
-				.buscaSituacao(doc.getExModelo(), null, null, ExTipoDeConfiguracao.DESTINATARIO);
-		if (idSit == CpSituacaoDeConfiguracaoEnum.PROIBIDO) 
-			return new HashMap<Integer, String>();
 		return TipoResponsavelEnum.getLista();
 	}
 
@@ -581,10 +570,6 @@ public class ExDocumentoDTO {
 			return "interno_capturado";
 		else if (getIdTpDoc() == ExTipoDocumento.TIPO_DOCUMENTO_EXTERNO_CAPTURADO)
 			return "externo_capturado";
-		else if (getIdTpDoc() == ExTipoDocumento.TIPO_DOCUMENTO_INTERNO_CAPTURADO_FORMATO_LIVRE)
-			return "interno_capturado_formato_livre";
-		else if (getIdTpDoc() == ExTipoDocumento.TIPO_DOCUMENTO_EXTERNO_CAPTURADO_FORMATO_LIVRE)
-			return "externo_capturado_formato_livre";
 		return "";
 	}
 
@@ -1054,32 +1039,6 @@ public class ExDocumentoDTO {
 
 	public void setPodeIncluirSubscrArvoreDocs(boolean podeIncluirSubscrArvoreDocs) {
 		this.podeIncluirSubscrArvoreDocs = podeIncluirSubscrArvoreDocs;
-	}
-
-	public boolean isCapturado() {
-		if (getIdTpDoc() == null && doc != null
-				&& doc.getExTipoDocumento() != null)
-			setIdTpDoc(doc.getExTipoDocumento().getId());
-		return (getIdTpDoc() == ExTipoDocumento.TIPO_DOCUMENTO_INTERNO_CAPTURADO || 
-				getIdTpDoc() == ExTipoDocumento.TIPO_DOCUMENTO_EXTERNO_CAPTURADO ||
-				getIdTpDoc() == ExTipoDocumento.TIPO_DOCUMENTO_INTERNO_CAPTURADO_FORMATO_LIVRE || 
-				getIdTpDoc() == ExTipoDocumento.TIPO_DOCUMENTO_EXTERNO_CAPTURADO_FORMATO_LIVRE);
-	}
-
-	public boolean isCapturadoFormatoLivre() {
-		if (getIdTpDoc() == null && doc != null
-				&& doc.getExTipoDocumento() != null)
-			setIdTpDoc(doc.getExTipoDocumento().getId());
-		return (getIdTpDoc() == ExTipoDocumento.TIPO_DOCUMENTO_INTERNO_CAPTURADO_FORMATO_LIVRE || 
-				getIdTpDoc() == ExTipoDocumento.TIPO_DOCUMENTO_EXTERNO_CAPTURADO_FORMATO_LIVRE);
-	}
-
-	public CpArquivo getCpArquivoFormatoLivre() {
-		return CpArquivoFormatoLivre;
-	}
-
-	public void setCpArquivoFormatoLivre(CpArquivo cpArquivoFormatoLivre) {
-		CpArquivoFormatoLivre = cpArquivoFormatoLivre;
 	}
 
 }

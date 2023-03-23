@@ -16,7 +16,7 @@
 				<h5 id="et">Receber notificação por e-mail</h5>
 			</div> <!-- card-header -->
 			<div class="card-body"> 
-				<form name="frm" id="listar" action="listar" method="get">
+				<form name="frm" id="listar" action="listar" method="GET">
 					<div class="row">
 						<div class="col-sm">
 							<div class="form-group">  

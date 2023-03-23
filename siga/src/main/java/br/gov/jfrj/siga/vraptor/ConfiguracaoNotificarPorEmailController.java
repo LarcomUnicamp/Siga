@@ -11,7 +11,6 @@ import br.com.caelum.vraptor.Controller;
 import br.com.caelum.vraptor.Get;
 import br.com.caelum.vraptor.Post;
 import br.com.caelum.vraptor.Result;
-import br.gov.jfrj.siga.base.AplicacaoException;
 import br.gov.jfrj.siga.cp.CpConfiguracao;
 import br.gov.jfrj.siga.cp.CpServico;
 import br.gov.jfrj.siga.cp.bl.Cp;
@@ -81,25 +80,12 @@ public class ConfiguracaoNotificarPorEmailController extends SigaSelecionavelCon
 	@Transacional 
 	@Post({"/app/notificarPorEmail/editar"})
 	public void editar (String siglaServ, Integer idSituacao) throws Exception {
-		assertAcesso("CEMAIL:Módulo de notificação por email");
-		
 		CpServico servico = null;
 		DpPessoa pessoa = null;
 		DpLotacao lotacao = null; 
-
-		if (!CpServicosNotificacaoPorEmail.getBySigla(siglaServ).isPresent()) {
-			throw new AplicacaoException("Não é permitido fazer essa configuração.");
-		}
-		
-		servico = dao().consultarCpServicoPorChave(siglaServ);
-		if (servico == null) {
-			throw new AplicacaoException("Não foi possível localizar um Serviço Válido");
-		}
-		
 		pessoa = daoPes(getCadastrante().getId()).getPessoaInicial();
 		lotacao = daoLot(getLotaCadastrante().getId()).getLotacaoInicial(); 
-
-		
+		servico = dao().consultarCpServicoPorChave(siglaServ);
 		CpSituacaoDeConfiguracaoEnum situacao = CpSituacaoDeConfiguracaoEnum.getById(idSituacao);
 		CpTipoDeConfiguracao tpConf = CpTipoDeConfiguracao.UTILIZAR_SERVICO; 
 		Cp.getInstance().getBL().configurarAcesso(null, getCadastrante().getOrgaoUsuario(), 

@@ -39,7 +39,7 @@
 				<c:if
 					test="${f:podeUtilizarServicoPorConfiguracao(titular,lotaTitular,'SIGA:Sistema Integrado de Gestão Administrativa;DOC:Módulo de Documentos;TRALOTE:Tramitar em Lote')}">
 					<li><a class="dropdown-item"
-						href="/sigaex/app/expediente/mov/tramitar_lote"><fmt:message key="documento.transferencia.lote" /></a></li>
+						href="/sigaex/app/expediente/mov/transferir_lote"><fmt:message key="documento.transferencia.lote" /></a></li>
 				</c:if>
 				<c:if
 					test="${f:podeUtilizarServicoPorConfiguracao(titular,lotaTitular,'SIGA:Sistema Integrado de Gestão Administrativa;DOC:Módulo de Documentos;RECLOTE:Receber em Lote')}">
@@ -63,11 +63,6 @@
 								href="/sigaex/app/expediente/mov/assinar_tudo">Assinar em Lote</a></li>
 						</c:otherwise>
 					</c:choose>
-				</c:if>
-				<c:if
-					test="${f:podeUtilizarServicoPorConfiguracao(titular,lotaTitular,'SIGA:Sistema Integrado de Gestão Administrativa;DOC:Módulo de Documentos;RECLALOTE:Reclassificar em Lote')}">
-					<li><a class="dropdown-item"
-						   href="/sigaex/app/expediente/mov/reclassificar_lote">Reclassificar em Lote</a></li>
 				</c:if>
 			</c:catch>
 
@@ -99,28 +94,12 @@
 							Intermediário em Lote</a></li>
 				</c:if>
 			</c:catch>
-			
-			<c:catch>
-				<c:if
-					test="${f:podeUtilizarServicoPorConfiguracao(titular,lotaTitular,'SIGA:Sistema Integrado de Gestão Administrativa;DOC:Módulo de Documentos;TRARQ: Transferência de Documentos Arquivados')}">
-						<li><a class="dropdown-item"
-								href="/sigaex/app/expediente/mov/transferir_doc_arquivado_lote">Transferência</a>
-						</li>
-				</c:if>
-			</c:catch>
-			
 			<c:catch>
 				<c:if
 					test="${f:podeArquivarPermanentePorConfiguracao(titular,lotaTitular)}">
 					<li><a class="dropdown-item"
 						href="/sigaex/app/expediente/mov/arquivar_permanente_lote">Arquivar
 							Permanente em Lote</a></li>
-				</c:if>
-			</c:catch>
-			<c:catch>
-				<c:if
-					test="${f:podeUtilizarServicoPorConfiguracao(titular,lotaTitular,'SIGA:Sistema Integrado de Gestão Administrativa;DOC:Módulo de Documentos;DEFLOTE:Definir Acompanhamento em Lote')}"> 
-						<li><a class="dropdown-item" href="/sigaex/app/expediente/mov/vincularPapelLote">Definir Acompanhamento em Lote</a></li>
 				</c:if>
 			</c:catch>
 			<c:catch>

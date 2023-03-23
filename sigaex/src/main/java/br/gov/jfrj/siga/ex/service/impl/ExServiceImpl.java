@@ -25,7 +25,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URLDecoder;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -63,7 +62,6 @@ import br.gov.jfrj.siga.ex.ExSequencia;
 import br.gov.jfrj.siga.ex.ExTipoDocumento;
 import br.gov.jfrj.siga.ex.ExTipoMobil;
 import br.gov.jfrj.siga.ex.bl.Ex;
-import br.gov.jfrj.siga.ex.bl.ExBL;
 import br.gov.jfrj.siga.ex.bl.ExConfiguracaoBL;
 import br.gov.jfrj.siga.ex.logic.ExPodeMovimentar;
 import br.gov.jfrj.siga.ex.logic.ExPodePublicarPortalDaTransparencia;
@@ -171,10 +169,7 @@ public class ExServiceImpl implements ExService {
 				}
 				PessoaLotacaoParser cadastranteParser = new PessoaLotacaoParser(siglaCadastrante);
 				PessoaLotacaoParser destinoParser = new PessoaLotacaoParser(siglaDestino);
-				
-				ExBL bl = Ex.getInstance().getBL();
-				bl.cancelarTramitesPendentes(mob, "Cancelamento automático de trâmite pendente para arquivamento");
-				bl.arquivarCorrente(cadastranteParser.getPessoa(), cadastranteParser.getLotacao(),
+				Ex.getInstance().getBL().arquivarCorrente(cadastranteParser.getPessoa(), cadastranteParser.getLotacao(),
 						mob, null, null, destinoParser.getPessoa(), false);
 				return true;
 			} catch (Exception ex) {
@@ -402,22 +397,6 @@ public class ExServiceImpl implements ExService {
 			}
 		}
 	}
-	
-	@Override
-	public Map<String, String> formAcumulativo(String codigoDocumento) throws Exception {
-		try (ExSoapContext ctx = new ExSoapContext(false)) {
-			try {
-				if (codigoDocumento == null)
-					return null;
-				ExMobil mob = buscarMobil(codigoDocumento);
-				return mob.doc().getRef().getForm();
-			} catch (Exception ex) {
-				Exception e = ctx.exceptionWithMessageFileAndLine(ex);
-				ctx.rollback(e);
-				throw e;
-			}
-		}
-	}
 
 	@Override
 	public Boolean exigirAnexo(String codigoDocumentoVia, String siglaCadastrante, String descricaoDoAnexo)
@@ -623,9 +602,21 @@ public class ExServiceImpl implements ExService {
 				cadastrante = cadastranteParser.getPessoa();
 				lotaCadastrante = cadastranteParser.getLotacaoOuLotacaoPrincipalDaPessoa();
 
-				if (lotaCadastrante == null)
+				if (cadastrante == null && lotaCadastrante != null) {
+					if (subscritor != null)
+						cadastrante = subscritor;
+					else {
+						List<DpPessoa> pessoas = dao().pessoasPorLotacao(lotaCadastrante.getId(), false, false);
+						if (pessoas == null || pessoas.size() == 0)
+							throw new AplicacaoException(
+									"Não foi possível eleger um cadastrante para a lotação informada.");
+						cadastrante = pessoas.get(0);
+					}
+				}
+
+				if (cadastrante == null || lotaCadastrante == null)
 					throw new AplicacaoException(
-							"Não foi possível encontrar uma lotação cadastrante com a matrícula informada.");
+							"Não foi possível encontrar um cadastrante ou uma lotação cadastrante com a matrícula informada.");
 
 				if (cadastrante != null && cadastrante.isFechada())
 					throw new AplicacaoException("O cadastrante não está mais ativo.");
@@ -829,8 +820,6 @@ public class ExServiceImpl implements ExService {
 	public String cadastrante(String codigoDocumentoVia) throws Exception {
 		try (ExSoapContext ctx = new ExSoapContext(false)) {
 			ExMobil mob = buscarMobil(codigoDocumentoVia);
-			if (mob.doc().getCadastrante() == null)
-			    return null;
 			return SiglaParser.makeSigla(mob.doc().getCadastrante(), mob.doc().getLotaCadastrante());
 		}
 	}
@@ -1134,11 +1123,15 @@ public class ExServiceImpl implements ExService {
 						listaMarcadores = marcadoresStr.split(",");
 					}
 
-					String url = Ex.getInstance().getBL()
-							.publicarTransparencia(mob, cadastrante, cadastrante.getLotacao(), false);
+					CpToken sigaUrlPermanente = new CpToken();
+					sigaUrlPermanente = Ex.getInstance().getBL().publicarTransparencia(mob, cadastrante,
+							cadastrante.getLotacao(), listaMarcadores, true);
+					String url = System.getProperty("siga.ex.enderecoAutenticidadeDocs")
+							.replace("/sigaex/public/app/autenticar", "");
+					String caminho = url + "/siga/public/app/sigalink/1/" + sigaUrlPermanente.getToken();
 
 					return "Documento " + siglaDocumento
-							+ " enviado para publicação. Gerado para acesso externo ao documento: " + url;
+							+ " enviado para publicação. Gerado para acesso externo ao documento: " + caminho;
 				}
 			} catch (Exception ex) {
 				ctx.rollback(ex);
@@ -1212,4 +1205,5 @@ public class ExServiceImpl implements ExService {
 					|| mobFilho.getMobilPrincipal().equals(mobPai.doc().getMobilGeral());
 		}
 	}
+
 }

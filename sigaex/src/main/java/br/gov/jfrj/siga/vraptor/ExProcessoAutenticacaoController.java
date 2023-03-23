@@ -155,7 +155,7 @@ public class ExProcessoAutenticacaoController extends ExController {
 
 	@Get("/public/app/processoArquivoAutenticado_stream")
 	public Download processoArquivoAutenticado_stream(final boolean assinado, final Long idMov,
-			final String certificadoB64, final String sigla, final boolean tamanhoOriginal) throws Exception {
+			final String certificadoB64, final String sigla) throws Exception {
 		String jwt = Utils.getCookieValue(request, "jwt-prot");
 		if (jwt == null) {
 			setDefaultResults();
@@ -194,7 +194,7 @@ public class ExProcessoAutenticacaoController extends ExController {
 			fileName = arq.getReferenciaPDF();
 			contentType = "application/pdf";
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			Documento.getDocumento(baos, null, mob, null, false, true, false, null, null, tamanhoOriginal);
+			Documento.getDocumento(baos, null, mob, null, false, true, false, null, null);
 			bytes = baos.toByteArray();
 		} else {			
 			if (idMov != null && idMov != 0) {
@@ -344,12 +344,14 @@ public class ExProcessoAutenticacaoController extends ExController {
 							exDocumentoDTO.getDoc().getSiglaAssinatura()
 					
 			);
-			
-			
-            ExProtocolo prot = Ex.getInstance().getBL().obterProtocolo(exDocumentoDTO.getDoc());
-			String codigoProtocolo = ( prot != null ) ? prot.getCodigo() : null;
 
-            result.include("protocolo", codigoProtocolo);
+            ExProtocolo prot = Ex.getInstance().getBL().obterProtocolo(exDocumentoDTO.getDoc());
+            if (prot == null) {
+                throw new AplicacaoException(
+                        "Ocorreu um erro ao obter protocolo do Documento: " + exDocumentoDTO.getDoc().getSigla());
+            }
+
+            result.include("protocolo", prot.getCodigo());
 			result.include("mob", exDocumentoDTO.getMob());
 			result.include("isProtocoloFilho", (idMovJuntada != null ? true : false));
 

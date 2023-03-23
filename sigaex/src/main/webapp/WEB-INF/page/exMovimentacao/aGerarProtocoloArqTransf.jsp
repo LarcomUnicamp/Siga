@@ -138,7 +138,7 @@
 				theme="simple">
 				<button type="button" class="btn btn-primary" onclick="javascript: document.body.offsetHeight; window.print();" >Imprimir</button>
 				<c:if test="${popup != true}">
-					<a href="/sigaex/app/expediente/mov/tramitar_lote" class="btn btn-cancel btn-primary">Voltar</a>
+					<button type="button" class="btn btn-primary" onclick="javascript:history.back();" >Voltar</button>
 				</c:if>
 			</form>
 		</div>

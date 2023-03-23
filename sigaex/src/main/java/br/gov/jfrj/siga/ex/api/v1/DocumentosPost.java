@@ -44,10 +44,8 @@ import br.gov.jfrj.siga.ex.model.enm.ExTipoDeConfiguracao;
 import br.gov.jfrj.siga.ex.util.NivelDeAcessoUtil;
 import br.gov.jfrj.siga.hibernate.ExDao;
 import br.gov.jfrj.siga.vraptor.Transacional;
-import br.gov.jfrj.siga.vraptor.RequestParamsPermissiveCheck;
 
 @Transacional
-@RequestParamsPermissiveCheck 
 public class DocumentosPost implements IDocumentosPost {
 	public DocumentosPost() {
 		SwaggerUtils.setUploadHandler(new ArquivoUploadHandler());
@@ -175,7 +173,7 @@ public class DocumentosPost implements IDocumentosPost {
 			doc.setLotaCadastrante(ctx.getLotaTitular());
 		}
 
-		if (doc.getLotaCadastrante() == null && doc.getCadastrante() != null) {
+		if (doc.getLotaCadastrante() == null) {
 			doc.setLotaCadastrante(doc.getCadastrante().getLotacao());
 		}
 
@@ -313,14 +311,11 @@ public class DocumentosPost implements IDocumentosPost {
 			}
 		}
 
-		if ((doc.isCapturado() && !doc.isCapturadoFormatoLivre())
+		if ((doc.getExTipoDocumento().getIdTpDoc() == ExTipoDocumento.TIPO_DOCUMENTO_INTERNO_CAPTURADO
+				|| doc.getExTipoDocumento().getIdTpDoc() == ExTipoDocumento.TIPO_DOCUMENTO_EXTERNO_CAPTURADO)
 				&& req.content == null)
 			throw new AplicacaoException(
 					"Documento capturado não pode ser gravado sem que seja informado o arquivo PDF.");
-
-		if (doc.isCapturadoFormatoLivre())
-			throw new AplicacaoException(
-					"Documento capturado de formato livre não pode ser gravado via web service.");
 
 		if (!ex.getConf().podePorConfiguracao(ctx.getTitular(), ctx.getLotaTitular(), doc.getExTipoDocumento(),
 				doc.getExFormaDocumento(), doc.getExModelo(), doc.getExClassificacaoAtual(),

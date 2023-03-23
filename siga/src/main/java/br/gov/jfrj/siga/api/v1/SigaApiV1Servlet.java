@@ -2,23 +2,17 @@ package br.gov.jfrj.siga.api.v1;
 
 import java.net.URL;
 import java.net.URLConnection;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.util.Map;
 
-import javax.naming.NameNotFoundException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
-import javax.sql.DataSource;
 
 import com.crivano.swaggerservlet.SwaggerContext;
 import com.crivano.swaggerservlet.SwaggerServlet;
 import com.crivano.swaggerservlet.dependency.TestableDependency;
 
 import br.gov.jfrj.siga.base.Prop;
-import br.gov.jfrj.siga.base.XjusRecordServiceEnum;
 import br.gov.jfrj.siga.base.Prop.IPropertyProvider;
 import br.gov.jfrj.siga.context.AcessoPublico;
 import br.gov.jfrj.siga.context.AcessoPublicoEPrivado;
@@ -163,6 +157,7 @@ public class SigaApiV1Servlet extends SwaggerServlet implements IPropertyProvide
 		addPublicProperty("datasource.name", "java:/jboss/datasources/SigaCpDS");
 		addPublicProperty("senha.usuario.expiracao.dias", null);
 		addPrivateProperty("sinc.password", null);
+
 	}
 
 	@Override

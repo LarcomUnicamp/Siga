@@ -597,15 +597,18 @@ public class CpBL {
 
 	private String textoEmailNovoUsuario(String matricula, String novaSenha, boolean autenticaPeloBanco) {
 		StringBuffer retorno = new StringBuffer();
-
-		retorno.append("Seu login é: ");
+		
+		retorno.append("Bem-vindo ao Siga-Doc do Município de São José do Rio Preto (SP)\n ");
+		retorno.append("O seu número de usuário/matrícula e senha para primeiro acesso ao sistema são:\n");
+		retorno.append("Matrícula: ");
 		retorno.append(matricula);
-		retorno.append("\n e sua senha é ");
+		retorno.append("\n e sua senha é: ");
 		if (autenticaPeloBanco) {
 			retorno.append(novaSenha);
 		} else {
 			retorno.append("a mesma usada para logon na rede (Windows).");
 		}
+		retorno.append("O link para acessar o sistema é:"+"<a href='https://sigadoc.riopreto.sp.gov.br/'>https://sigadoc.riopreto.sp.gov.br/</a>");
 		retorno.append("\n\n Atenção: esta é uma ");
 		retorno.append("mensagem automática. Por favor não responda ");
 
